@@ -23,8 +23,17 @@ namespace DapperHelper
 		}
 		private void btnRun_Click(object sender, EventArgs e)
 		{
-			string connStr = txtConnStr.Text;
-			SimpleCRUD.Generate(connStr);
+			try
+			{
+				string connStr = txtConnStr.Text;
+				SimpleCRUD.Generate(connStr);
+
+				MessageBox.Show("finished");
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.ToString());
+			}
 		}
 
 	}

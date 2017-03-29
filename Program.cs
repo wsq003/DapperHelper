@@ -44,7 +44,16 @@ namespace DapperHelper
 				string destPath = args[1];
 				string namespace_ = args[2];
 
-				SimpleCRUD.Generate(connStr, destPath, namespace_);
+				try
+				{
+					SimpleCRUD.Generate(connStr, destPath, namespace_);
+
+					Console.Write("finished");
+				}
+				catch (Exception ex)
+				{
+					Console.Write(ex.ToString());
+				}
 			}
 		}
 	}
