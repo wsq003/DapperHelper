@@ -17,10 +17,15 @@ namespace DapperHelper
 			InitializeComponent();
 		}
 
+		private void DapperHelper_Load(object sender, EventArgs e)
+		{
+
+		}
 		private void btnRun_Click(object sender, EventArgs e)
 		{
-			string connStr = ""; ;
+			string connStr = txtConnStr.Text;
 			SimpleCRUD.Generate(connStr);
 		}
+
 	}
 }
