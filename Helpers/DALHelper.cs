@@ -40,16 +40,17 @@ namespace DapperHelper
 			//head
 			sb.AppendFormat("using System;\r\n");
 			sb.AppendFormat("\r\n");
-			sb.AppendFormat("namespace {0}\r\n", _namespace);
+			sb.AppendFormat("namespace {0}.SQL\r\n", _namespace);
 			sb.AppendFormat("{{\r\n");
-			sb.AppendFormat("\tpublic class {0}SQL\r\n", _tableName);
+			sb.AppendFormat("\tpublic partial class {0}\r\n", _tableName);
 			sb.AppendFormat("\t{{\r\n");
 
 			//body
-			sb.AppendFormat("\t\tpublic static string insert=\"{0}\";\r\n", genInsert());
-			sb.AppendFormat("\t\tpublic static string update=\"{0}\";\r\n", genUpdate());
-			sb.AppendFormat("\t\tpublic static string select=\"{0}\";\r\n", genSelect());
-			sb.AppendFormat("\t\tpublic static string delete=\"{0}\";\r\n", genDelete());
+			sb.AppendFormat("\t\tpublic static string insert = \"{0}\";\r\n", genInsert());
+			sb.AppendFormat("\t\tpublic static string update = \"{0}\";\r\n", genUpdate());
+			sb.AppendFormat("\t\tpublic static string select = \"{0}\";\r\n", genSelect());
+			sb.AppendFormat("\t\tpublic static string delete = \"{0}\";\r\n", genDelete());
+			sb.AppendFormat("\t\tpublic static string exist = \"{0}\";\r\n", genExist());
 
 			//tail
 			sb.AppendFormat("\t}} //end of class\r\n");
@@ -58,26 +59,44 @@ namespace DapperHelper
 			return sb.ToString();
 		}
 
-		private string genDelete()
+		private string genInsert()
 		{
-			StringBuilder sb = new StringBuilder();
-			sb.Append("DELETE FROM [" + _dtMetaInfo.TableName + "]");
-			sb.Append(GetWhereCondition());
-			return sb.ToString();
+			StringBuilder insert = new StringBuilder();
+			insert.Append("INSERT INTO [" + _dtMetaInfo.TableName + "] (");
+			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
+			{
+				if (_dtMetaInfo.Rows[i]["is_identity"].ToString() == "1")
+				{
+					continue;
+				}
+				insert.Append("[" + _dtMetaInfo.Rows[i]["name"].ToString() + "], ");
+			}
+			insert.Remove(insert.Length - 2, 2);
+			insert.Append(") VALUES (");
+
+			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
+			{
+				insert.AppendFormat("@{0}, ", _dtMetaInfo.Rows[i]["name"].ToString());
+			}
+			if (insert.Length > 0)
+			{
+				insert.Remove(insert.Length - 2, 2);
+				insert.Append(")");
+			}
+			return insert.ToString();
 		}
 
 		private string genUpdate()
 		{
 			StringBuilder updateStr = new StringBuilder();
-			updateStr.Append("UPDATE [" + _dtMetaInfo.TableName + "] SET ");
+			updateStr.AppendFormat("UPDATE [{0}] SET ", _dtMetaInfo.TableName);
 			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
 			{
-				if (_dtMetaInfo.Rows[i]["name"].ToString().ToLower().Equals("id")
-				   || _dtMetaInfo.Rows[i]["name"].ToString().ToLower().Equals("adder")
-				   || _dtMetaInfo.Rows[i]["name"].ToString().ToLower().Equals("addtime")
-				   || _dtMetaInfo.Rows[i]["name"].ToString().ToLower().Equals("adddate"))
+				if (_dtMetaInfo.Rows[i]["is_identity"].ToString() == "1")
+				{
 					continue;
-				updateStr.Append("[" + _dtMetaInfo.Rows[i]["name"].ToString().ToUpper() + "] = @" + _dtMetaInfo.Rows[i]["name"].ToString().ToLower() + ", ");
+				}
+				updateStr.AppendFormat("[{0}]=@{0}, ", _dtMetaInfo.Rows[i]["name"].ToString());
 			}
 			updateStr.Remove(updateStr.Length - 2, 2);
 			updateStr.Append(GetWhereCondition());
@@ -90,40 +109,33 @@ namespace DapperHelper
 			sb.Append("SELECT ");
 			foreach (DataRow dr in _dtMetaInfo.Rows)
 			{
-				sb.Append("[" + dr["name"].ToString().ToUpper() + "], ");
+				sb.AppendFormat("[{0}], ", dr["name"].ToString());
 			}
 			sb.Remove(sb.Length - 2, 2);
-			sb.Append(" FROM [" + _dtMetaInfo.TableName + "]");
+			sb.AppendFormat(" FROM [{0}]", _dtMetaInfo.TableName);
 			return sb.ToString();
 		}
 
-		private string genInsert()
+		private string genDelete()
 		{
-			StringBuilder insert = new StringBuilder();
-			insert.Append("INSERT INTO [" + _dtMetaInfo.TableName + "]( ");
-			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
-			{
-				if (_dtMetaInfo.Rows[i]["name"].ToString().ToLower().Equals("id"))
-				{
-					continue;
-				}
-				insert.Append("[" + _dtMetaInfo.Rows[i]["name"].ToString().ToUpper() + "], ");
-			}
-			insert.Remove(insert.Length - 2, 2);
-			insert.Append(") VALUES (");
-
-			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
-			{
-				insert.Append("@" + _dtMetaInfo.Rows[i]["name"].ToString().ToLower() + ", ");
-			}
-			if (insert.Length > 0)
-			{
-				insert.Remove(insert.Length - 2, 2);
-				insert.Append(")");
-			}
-			return insert.ToString();
+			StringBuilder sb = new StringBuilder();
+			sb.AppendFormat("DELETE FROM [{0}]", _dtMetaInfo.TableName);
+			sb.Append(GetWhereCondition());
+			return sb.ToString();
 		}
 
+		string genExist()
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.AppendFormat("select count(1) FROM [{0}]", _dtMetaInfo.TableName);
+			sb.Append(GetWhereCondition());
+			return sb.ToString();
+		}
+
+		/// <summary>
+		/// 基于主键信息生成 “前面带空格的where条件”
+		/// </summary>
+		/// <returns></returns>
 		protected string GetWhereCondition()
 		{
 			string sql = string.Format("SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{0}'", _dtMetaInfo.TableName);
@@ -140,7 +152,7 @@ namespace DapperHelper
 			{
 				foreach (DataRow dr in dt.Rows)
 				{
-					condition.Append(string.Format("{0} = @{0} and ", dr["column_name"].ToString()));
+					condition.AppendFormat("{0} = @{0} and ", dr["column_name"].ToString());
 				}
 
 			}

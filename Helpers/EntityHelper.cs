@@ -41,13 +41,13 @@ namespace DapperHelper
 			sb.AppendFormat("\r\n");
 			sb.AppendFormat("namespace {0}\r\n", _namespace);
 			sb.AppendFormat("{{\r\n");
-			sb.AppendFormat("\tpublic class {0}Entity\r\n", _tableName);
+			sb.AppendFormat("\tpublic class {0}\r\n", _tableName);
 			sb.AppendFormat("\t{{\r\n");
 
 			//body
 			foreach (DataRow dr in _dtMetaInfo.Rows)
 			{
-				sb.AppendFormat("\t\tpublic {0} {1};\r\n", CreateHelper.ConvertType(dr["type"].ToString()), dr["name"]);
+				sb.AppendFormat("\t\tpublic {0} {1} {{ get; set; }}\r\n", CreateHelper.ConvertType(dr["type"].ToString()), dr["name"]);
 			}
 
 			//tail

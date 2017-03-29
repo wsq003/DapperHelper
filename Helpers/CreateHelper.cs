@@ -65,7 +65,7 @@ namespace DapperHelper
 				DataTable dtMetaInfo = new DataTable();
 				SqlCommand comm = new SqlCommand();
 				comm.Connection = conn;
-				comm.CommandText = "SELECT A.NAME NAME , B.NAME TYPE, A.MAX_LENGTH LENGTH FROM SYS.COLUMNS A, SYS.TYPES B WHERE A.SYSTEM_TYPE_ID = B.SYSTEM_TYPE_ID AND B.NAME != 'SYSNAME' AND A.OBJECT_ID = (SELECT OBJECT_ID FROM SYS.TABLES WHERE NAME = '" + tableName + "')  ORDER BY A.COLUMN_ID";
+				comm.CommandText = string.Format("SELECT A.*, B.Name type FROM SYS.COLUMNS A, SYS.TYPES B WHERE A.SYSTEM_TYPE_ID = B.SYSTEM_TYPE_ID AND B.NAME != 'SYSNAME' AND A.OBJECT_ID = (SELECT OBJECT_ID FROM SYS.TABLES WHERE NAME = '{0}')  ORDER BY A.COLUMN_ID", tableName);
 				using (SqlDataAdapter da = new SqlDataAdapter(comm))
 				{
 					da.Fill(dtMetaInfo);
