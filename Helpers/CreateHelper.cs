@@ -73,9 +73,9 @@ namespace DapperHelper
 						sourceType;
 					break;
 			}
-			if (is_nullable == "1")
+			if (is_nullable == "True")
 			{
-				destType += "?";
+				//destType += "?";
 			}
 			return destType;
 		}

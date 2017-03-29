@@ -47,6 +47,9 @@ namespace DapperHelper
 			//body
 			foreach (DataRow dr in _dtMetaInfo.Rows)
 			{
+				if (dr["name"].ToString() == "orderNo")
+				{
+				}
 				sb.AppendFormat("\t\tpublic {0} {1} {{ get; set; }}\r\n", CreateHelper.ConvertType(dr), dr["name"]);
 			}
 
