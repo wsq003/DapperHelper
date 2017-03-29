@@ -11,24 +11,39 @@ namespace DapperHelper
 	class CreateHelper
 	{
 		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="dr">metaInfo table中的一行</param>
+		/// <returns></returns>
+		public static string ConvertType(DataRow dr)
+		{
+			return ConvertType(dr["type"].ToString(), dr["is_nullable"].ToString());
+		}
+
+		/// <summary>
 		/// 把数据库类型转换为C#类型
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
-		public static string ConvertType(string sourceType)
+		public static string ConvertType(string sourceType, string is_nullable)
 		{
+			string destType = "";
 			switch (sourceType.ToLower())
 			{
 				case "tinyint":
 				case "smallint":
 				case "int":
-					return "int?";
+					destType = "int";
+					break;
 				case "bigint":
-					return "long";
+					destType = "long";
+					break;
 				case "float":
-					return "float?";
+					destType = "float";
+					break;
 				case "numeric":
-					return "double?";
+					destType = "double";
+					break;
 				case "char":
 				case "text":
 				case "ntext":
@@ -36,23 +51,35 @@ namespace DapperHelper
 				case "nvarchar":
 				case "varchar":
 				case "sysname":
-					return "string";
+					destType = "string";
+					break;
 				case "time":
-					return "string";
+					destType = "string";
+					break;
 				case "datetime":
 				case "datetime2":
 				case "date":
 				case "smalldatetime":
-					return "DateTime?";
+					destType = "DateTime";
+					break;
 				case "decimal":
-					return "decimal?";
+					destType = "decimal";
+					break;
 				case "money":
-					return "double";
+					destType = "double";
+					break;
 				default:
-					return
+					destType =
 						sourceType;
+					break;
 			}
+			if (is_nullable == "1")
+			{
+				destType += "?";
+			}
+			return destType;
 		}
+
 
 		/// <summary>
 		/// 获取数据库表的meta信息，放入dtMetaInfo

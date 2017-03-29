@@ -47,7 +47,7 @@ namespace DapperHelper
 			//body
 			foreach (DataRow dr in _dtMetaInfo.Rows)
 			{
-				sb.AppendFormat("\t\tpublic {0} {1} {{ get; set; }}\r\n", CreateHelper.ConvertType(dr["type"].ToString()), dr["name"]);
+				sb.AppendFormat("\t\tpublic {0} {1} {{ get; set; }}\r\n", CreateHelper.ConvertType(dr), dr["name"]);
 			}
 
 			//tail
