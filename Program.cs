@@ -29,11 +29,13 @@ namespace DapperHelper
 
 			if (args.Length > 0)
 			{
+				AttachConsole(ATTACH_PARENT_PROCESS);
+
+
 				if (args.Length != 3)
 				{
-					string info = "\r\nUsage:\r\n\tDapperHelper db_connection_string, dest_folder_path, code_namespace\r\n";
+					string info = "\r\nUsage:\r\n\tDapperHelper db_connection_string dest_folder_path code_namespace\r\n";
 
-					AttachConsole(ATTACH_PARENT_PROCESS);
 					Console.WriteLine(info);
 					Console.WriteLine("");
 
@@ -43,6 +45,8 @@ namespace DapperHelper
 				string connStr = args[0];
 				string destPath = args[1];
 				string namespace_ = args[2];
+
+				Console.WriteLine(string.Format("connStr={0}", connStr));
 
 				try
 				{

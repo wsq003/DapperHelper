@@ -46,10 +46,10 @@ namespace DapperHelper
 			sb.AppendFormat("\t{{\r\n");
 
 			//body
-			sb.AppendFormat("\t\tpublic static string insert=\"{0}\"\r\n", genInsert());
-			sb.AppendFormat("\t\tpublic static string update=\"{0}\"\r\n", genUpdate());
-			sb.AppendFormat("\t\tpublic static string select=\"{0}\"\r\n", genSelect());
-			sb.AppendFormat("\t\tpublic static string delete=\"{0}\"\r\n", genDelete());
+			sb.AppendFormat("\t\tpublic static string insert=\"{0}\";\r\n", genInsert());
+			sb.AppendFormat("\t\tpublic static string update=\"{0}\";\r\n", genUpdate());
+			sb.AppendFormat("\t\tpublic static string select=\"{0}\";\r\n", genSelect());
+			sb.AppendFormat("\t\tpublic static string delete=\"{0}\";\r\n", genDelete());
 
 			//tail
 			sb.AppendFormat("\t}} //end of class\r\n");
@@ -69,7 +69,7 @@ namespace DapperHelper
 		private string genUpdate()
 		{
 			StringBuilder updateStr = new StringBuilder();
-			updateStr.Append("\r\n\r\nUPDATE [" + _dtMetaInfo.TableName + "] SET ");
+			updateStr.Append("UPDATE [" + _dtMetaInfo.TableName + "] SET ");
 			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
 			{
 				if (_dtMetaInfo.Rows[i]["name"].ToString().ToLower().Equals("id")
@@ -96,33 +96,6 @@ namespace DapperHelper
 			sb.Append(" FROM [" + _dtMetaInfo.TableName + "]");
 			return sb.ToString();
 		}
-
-		#region 方法
-		private string IsExist()
-		{
-			StringBuilder sb = new StringBuilder();
-
-			sb.Append("          /// <summary>\r\n");
-			sb.Append("          /// 判断是否重复\r\n");
-			sb.Append("          /// </summary>\r\n");
-			sb.Append("         public int IsExist(string id, string name)\r\n");
-			sb.Append("         {\r\n");
-			sb.Append("               //重复的不能保存， 判断重复时，应该排除掉自己; \r\n");
-			sb.Append("               //重复的不能保存， 判断重复如果是非物理删除，要去掉状态为-1的; \r\n");
-			if (_dtMetaInfo.Rows[1]["type"].ToString() == "text")
-			{
-				sb.Append("            return _sqlH.GetScalar<int>(\"SELECT COUNT(1) FROM [" + _dtMetaInfo.TableName + "]  WHERE ID <> '\" + id + \"' AND "
-								   + _dtMetaInfo.Rows[1]["name"].ToString() + " LIKE '\" + name + \"' AND STATUS > -1\");\r\n");
-			}
-			else
-			{
-				sb.Append("            return _sqlH.GetScalar<int>(\"SELECT COUNT(1) FROM [" + _dtMetaInfo.TableName + "]  WHERE ID <> '\" + id + \"' AND "
-					+ _dtMetaInfo.Rows[1]["name"].ToString() + " = '\" + name + \"' AND STATUS > -1\");\r\n");
-			}
-			sb.Append("         }\r\n");
-			return sb.ToString();
-		}
-		#endregion
 
 		private string genInsert()
 		{
