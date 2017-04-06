@@ -55,7 +55,8 @@ namespace DapperHelper
 			sb.AppendFormat("\t\tpublic static string update = \"{0}\";\r\n", genUpdate());
 			sb.AppendFormat("\t\tpublic static string select = \"{0}\";\r\n", genSelect());
 			sb.AppendFormat("\t\tpublic static string delete = \"{0}\";\r\n", genDelete());
-			sb.AppendFormat("\t\tpublic static string exist = \"{0}\";\r\n", genExist());
+			sb.AppendFormat("\t\tpublic static string count = \"{0}\";\r\n", genCount());
+			sb.AppendFormat("\t\tpublic static string insertOrUpdate = \"{0}\";\r\n", genInsertOrUpdate());
 
 			//tail
 			sb.AppendFormat("\t}} //end of class\r\n");
@@ -129,11 +130,21 @@ namespace DapperHelper
 			return sb.ToString();
 		}
 
-		string genExist()
+		string genCount()
 		{
 			StringBuilder sb = new StringBuilder();
 			sb.AppendFormat("select count(1) FROM [{0}]", _dtMetaInfo.TableName);
 			sb.Append(GetWhereCondition());
+			return sb.ToString();
+		}
+
+		string genInsertOrUpdate()
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.AppendFormat("if (({0}) > 0) ", genCount());
+			sb.AppendFormat(" {0} ", genUpdate());
+			sb.AppendFormat("else ");
+			sb.AppendFormat(" {0}", genInsert());
 			return sb.ToString();
 		}
 
