@@ -71,7 +71,7 @@ namespace DapperHelper
 			insert.Append("INSERT INTO [" + _dtMetaInfo.TableName + "] (");
 			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
 			{
-				if (_dtMetaInfo.Rows[i]["is_identity"].ToString() == "1")
+				if (_dtMetaInfo.Rows[i]["is_identity"].ToString().ToLower() == "true")
 				{
 					continue;
 				}
@@ -82,6 +82,10 @@ namespace DapperHelper
 
 			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
 			{
+				if (_dtMetaInfo.Rows[i]["is_identity"].ToString().ToLower() == "true")
+				{
+					continue;
+				}
 				insert.AppendFormat("@{0}, ", _dtMetaInfo.Rows[i]["name"].ToString());
 			}
 			if (insert.Length > 0)
