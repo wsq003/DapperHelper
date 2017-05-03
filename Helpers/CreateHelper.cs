@@ -68,6 +68,9 @@ namespace DapperHelper
 				case "money":
 					destType = "double";
 					break;
+				case "bit":
+					destType = "bool";
+					break;
 				default:
 					destType =
 						sourceType;

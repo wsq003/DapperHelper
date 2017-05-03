@@ -71,11 +71,13 @@ namespace DapperHelper
 			insert.Append("INSERT INTO [" + _dtMetaInfo.TableName + "] (");
 			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
 			{
-				if (_dtMetaInfo.Rows[i]["is_identity"].ToString().ToLower() == "true")
+				string name = _dtMetaInfo.Rows[i]["name"].ToString();
+				string identity = _dtMetaInfo.Rows[i]["is_identity"].ToString().ToLower();
+				if (identity == "true")
 				{
 					continue;
 				}
-				insert.Append("[" + _dtMetaInfo.Rows[i]["name"].ToString() + "], ");
+				insert.Append("[" + name + "], ");
 			}
 			insert.Remove(insert.Length - 2, 2);
 			insert.Append(") VALUES (");
@@ -102,11 +104,13 @@ namespace DapperHelper
 			updateStr.AppendFormat("UPDATE [{0}] SET ", _dtMetaInfo.TableName);
 			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
 			{
-				if (_dtMetaInfo.Rows[i]["is_identity"].ToString() == "1")
+				string name = _dtMetaInfo.Rows[i]["name"].ToString();
+				string identity = _dtMetaInfo.Rows[i]["is_identity"].ToString().ToLower();
+				if (identity == "true")
 				{
 					continue;
 				}
-				updateStr.AppendFormat("[{0}]=@{0}, ", _dtMetaInfo.Rows[i]["name"].ToString());
+				updateStr.AppendFormat("[{0}]=@{0}, ", name);
 			}
 			updateStr.Remove(updateStr.Length - 2, 2);
 			updateStr.Append(GetWhereCondition());
@@ -176,13 +180,13 @@ namespace DapperHelper
 				}
 
 			}
-			string conditions = "";
+			string ret = "";
 			if (condition.Length > 0)
 			{
 				condition.Remove(condition.Length - 5, 5);
-				conditions = " WHERE " + condition.ToString();
+				ret = " WHERE " + condition.ToString();
 			}
-			return conditions;
+			return ret;
 		}
 	}
 }
