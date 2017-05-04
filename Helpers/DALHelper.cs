@@ -54,6 +54,7 @@ namespace DapperHelper
 			sb.AppendFormat("\t\tpublic static string insert = \"{0}\";\r\n", genInsert());
 			sb.AppendFormat("\t\tpublic static string update = \"{0}\";\r\n", genUpdate());
 			sb.AppendFormat("\t\tpublic static string select = \"{0}\";\r\n", genSelect());
+			sb.AppendFormat("\t\tpublic static string getModel = \"{0}\";\r\n", genGetModel());
 			sb.AppendFormat("\t\tpublic static string delete = \"{0}\";\r\n", genDelete());
 			sb.AppendFormat("\t\tpublic static string count = \"{0}\";\r\n", genCount());
 			sb.AppendFormat("\t\tpublic static string insertOrUpdate = \"{0}\";\r\n", genInsertOrUpdate());
@@ -129,6 +130,21 @@ namespace DapperHelper
 			sb.Remove(sb.Length - 2, 2);
 			sb.AppendFormat(" FROM [{0}]", _dtMetaInfo.TableName);
 			return sb.ToString();
+		}
+
+		private string genGetModel()
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append("SELECT ");
+			foreach (var col in _dtMetaInfo.columns)
+			{
+				sb.AppendFormat("[{0}], ", col.name);
+			}
+			sb.Remove(sb.Length - 2, 2);
+			sb.AppendFormat(" FROM [{0}]", _dtMetaInfo.TableName);
+			sb.Append(GetWhereCondition());
+			return sb.ToString();
+
 		}
 
 		private string genDelete()
