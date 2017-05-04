@@ -13,7 +13,7 @@ namespace DapperHelper
 		/// <summary>
 		/// 表的meta信息
 		/// </summary>
-		public DataTable _dtMetaInfo;
+		public MetaInfo _dtMetaInfo;
 		/// <summary>
 		/// 代码的命名空间
 		/// </summary>
@@ -23,7 +23,7 @@ namespace DapperHelper
 		/// </summary>
 		public string _tableName;
 
-		public EntityHelper(string connStr, DataTable dt, string namespace_)
+		public EntityHelper(string connStr, MetaInfo dt, string namespace_)
         {
 			ConnectionString = connStr;
 			_dtMetaInfo = dt;
@@ -50,12 +50,12 @@ namespace DapperHelper
 			sb.AppendFormat("\t{{\r\n");
 
 			//body
-			foreach (DataRow dr in _dtMetaInfo.Rows)
+			foreach (var col in _dtMetaInfo.columns)
 			{
-				if (dr["name"].ToString() == "orderNo")
-				{
-				}
-				sb.AppendFormat("\t\tpublic {0} {1} {{ get; set; }}\r\n", CreateHelper.ConvertType(dr), dr["name"]);
+				sb.AppendFormat("\t\t/// <summary>\r\n");
+				sb.AppendFormat("\t\t/// {0}\r\n", col.comment);
+				sb.AppendFormat("\t\t/// </summary>\r\n");
+				sb.AppendFormat("\t\tpublic {0} {1} {{ get; set; }}\r\n", col.csType, col.name);
 			}
 
 			//tail

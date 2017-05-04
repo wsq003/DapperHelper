@@ -14,7 +14,7 @@ namespace DapperHelper
 		/// <summary>
 		/// 表的meta信息
 		/// </summary>
-		public DataTable _dtMetaInfo;
+		public MetaInfo _dtMetaInfo;
 		/// <summary>
 		/// 代码的命名空间
 		/// </summary>
@@ -24,7 +24,7 @@ namespace DapperHelper
 		/// </summary>
 		public string _tableName;
 
-		public DALHelper(string connStr, DataTable dt, string namespace_)
+		public DALHelper(string connStr, MetaInfo dt, string namespace_)
 		{
 			ConnectionString = connStr;
 			_dtMetaInfo = dt;
@@ -69,11 +69,11 @@ namespace DapperHelper
 		{
 			StringBuilder insert = new StringBuilder();
 			insert.Append("INSERT INTO [" + _dtMetaInfo.TableName + "] (");
-			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
+			for (int i = 0; i < _dtMetaInfo.columns.Count; i++)
 			{
-				string name = _dtMetaInfo.Rows[i]["name"].ToString();
-				string identity = _dtMetaInfo.Rows[i]["is_identity"].ToString().ToLower();
-				if (identity == "true")
+				var col = _dtMetaInfo.columns[i];
+				string name = col.name;
+				if (col.is_identity)
 				{
 					continue;
 				}
@@ -82,13 +82,14 @@ namespace DapperHelper
 			insert.Remove(insert.Length - 2, 2);
 			insert.Append(") VALUES (");
 
-			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
+			for (int i = 0; i < _dtMetaInfo.columns.Count; i++)
 			{
-				if (_dtMetaInfo.Rows[i]["is_identity"].ToString().ToLower() == "true")
+				var col = _dtMetaInfo.columns[i];
+				if (col.is_identity)
 				{
 					continue;
 				}
-				insert.AppendFormat("@{0}, ", _dtMetaInfo.Rows[i]["name"].ToString());
+				insert.AppendFormat("@{0}, ", col.name);
 			}
 			if (insert.Length > 0)
 			{
@@ -102,11 +103,11 @@ namespace DapperHelper
 		{
 			StringBuilder updateStr = new StringBuilder();
 			updateStr.AppendFormat("UPDATE [{0}] SET ", _dtMetaInfo.TableName);
-			for (int i = 0; i < _dtMetaInfo.Rows.Count; i++)
+			for (int i = 0; i < _dtMetaInfo.columns.Count; i++)
 			{
-				string name = _dtMetaInfo.Rows[i]["name"].ToString();
-				string identity = _dtMetaInfo.Rows[i]["is_identity"].ToString().ToLower();
-				if (identity == "true")
+				var col = _dtMetaInfo.columns[i];
+				string name = col.name;
+				if (col.is_identity)
 				{
 					continue;
 				}
@@ -121,9 +122,9 @@ namespace DapperHelper
 		{
 			StringBuilder sb = new StringBuilder();
 			sb.Append("SELECT ");
-			foreach (DataRow dr in _dtMetaInfo.Rows)
+			foreach (var col in _dtMetaInfo.columns)
 			{
-				sb.AppendFormat("[{0}], ", dr["name"].ToString());
+				sb.AppendFormat("[{0}], ", col.name);
 			}
 			sb.Remove(sb.Length - 2, 2);
 			sb.AppendFormat(" FROM [{0}]", _dtMetaInfo.TableName);
@@ -162,24 +163,19 @@ namespace DapperHelper
 		/// <returns></returns>
 		protected string GetWhereCondition()
 		{
-			string sql = string.Format("SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{0}'", _dtMetaInfo.TableName);
-			DataTable dt = new DataTable();
-			SqlCommand comm = new SqlCommand();
-			comm.Connection = new SqlConnection(ConnectionString);
-			comm.CommandText = sql;
-			using (SqlDataAdapter da = new SqlDataAdapter(comm))
-			{
-				da.Fill(dt);
-			}
 			StringBuilder condition = new StringBuilder();
-			if (dt != null && dt.Rows.Count > 0)
-			{
-				foreach (DataRow dr in dt.Rows)
-				{
-					condition.AppendFormat("{0} = @{0} and ", dr["column_name"].ToString());
-				}
 
+			var ttt = from p in _dtMetaInfo.columns orderby p.name select p;
+			var ay = ttt.ToList();
+			for (int i = 0; i < ay.Count; i++)
+			{
+				var col = ay[i];
+				if (col.is_primeKey)
+				{
+					condition.AppendFormat("{0} = @{0} and ", col.name);
+				}
 			}
+
 			string ret = "";
 			if (condition.Length > 0)
 			{

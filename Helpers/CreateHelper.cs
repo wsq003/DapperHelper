@@ -8,6 +8,51 @@ using System.Threading.Tasks;
 
 namespace DapperHelper
 {
+	/// <summary>
+	/// 某个字段的信息
+	/// </summary>
+	public class ColumnInfo
+	{
+		/// <summary>
+		/// 字段名称
+		/// </summary>
+		public string name;
+
+		/// <summary>
+		/// C#里面的字段类型
+		/// </summary>
+		public string csType;
+
+		/// <summary>
+		/// 是否自增长
+		/// </summary>
+		public bool is_identity;
+
+		/// <summary>
+		/// 是否可为NULL
+		/// </summary>
+		public bool is_nullable;
+
+		/// <summary>
+		/// 是否主键字段之一
+		/// </summary>
+		public bool is_primeKey;
+
+		/// <summary>
+		/// 字段注释
+		/// </summary>
+		public string comment;
+	}
+
+	/// <summary>
+	/// 数据库表的meta信息
+	/// </summary>
+	public class MetaInfo
+	{
+		public string TableName;
+		public List<ColumnInfo> columns = new List<ColumnInfo>();
+	}
+
 	class CreateHelper
 	{
 		/// <summary>
@@ -20,8 +65,10 @@ namespace DapperHelper
 			return ConvertType(dr["type"].ToString(), dr["is_nullable"].ToString());
 		}
 
+		static List<string> nullables = new List<string> { "int", "long", "double", "DateTime" };
+
 		/// <summary>
-		/// 把数据库类型转换为C#类型
+		/// 把sql server数据库类型转换为C#类型
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
@@ -76,33 +123,55 @@ namespace DapperHelper
 						sourceType;
 					break;
 			}
-			if (is_nullable == "True")
+			if (is_nullable == "True" && nullables.Contains(destType))
 			{
 				//destType += "?";
 			}
 			return destType;
 		}
 
-
 		/// <summary>
 		/// 获取数据库表的meta信息，放入dtMetaInfo
 		/// </summary>
 		/// <returns></returns>
-		public static DataTable GetMetaInfo(string connStr, string tableName)
+		public static MetaInfo GetMetaInfo(string connStr, string tableName)
 		{
+			string sql = "select T.*, d.COLUMN_NAME as primeKey from "
+				+" (select T.*, C.value as comment from "
+				+" ( SELECT A.*, B.Name as type FROM SYS.COLUMNS A, SYS.TYPES B "
+				+"  WHERE A.SYSTEM_TYPE_ID = B.SYSTEM_TYPE_ID and B.NAME != 'SYSNAME' "
+				+"  AND A.OBJECT_ID = (SELECT OBJECT_ID FROM SYS.TABLES WHERE NAME = 'openaccount')  ) T "
+				+"  left join (select * from sys.extended_properties where name='MS_Description' ) C on T.object_id = c.major_id AND T.column_id=c.minor_id "
+				+ "  ) T left join INFORMATION_SCHEMA.KEY_COLUMN_USAGE d on d.table_name='openaccount' and d.column_name=T.name  order by column_id ";
+
+			sql = sql.Replace("openaccount", tableName);
 			using (SqlConnection conn = new SqlConnection(connStr))
 			{
 				DataTable dtMetaInfo = new DataTable();
 				SqlCommand comm = new SqlCommand();
 				comm.Connection = conn;
-				comm.CommandText = string.Format("SELECT A.*, B.Name type FROM SYS.COLUMNS A, SYS.TYPES B WHERE A.SYSTEM_TYPE_ID = B.SYSTEM_TYPE_ID AND B.NAME != 'SYSNAME' AND A.OBJECT_ID = (SELECT OBJECT_ID FROM SYS.TABLES WHERE NAME = '{0}')  ORDER BY A.COLUMN_ID", tableName);
+				comm.CommandText = sql;
 				using (SqlDataAdapter da = new SqlDataAdapter(comm))
 				{
 					da.Fill(dtMetaInfo);
 				}
 				dtMetaInfo.TableName = tableName;
 
-				return dtMetaInfo;
+				MetaInfo meta = new MetaInfo();
+				meta.TableName = tableName;
+				foreach (DataRow row in dtMetaInfo.Rows)
+				{
+					ColumnInfo col = new ColumnInfo();
+					col.name = row["name"].ToString();
+					col.csType = ConvertType(row["type"].ToString(), row["is_nullable"].ToString());
+					col.is_identity = row["is_identity"].ToString() == "True";
+					col.is_nullable = row["is_nullable"].ToString() == "True";
+					col.is_primeKey = row["primeKey"].ToString().Length > 0;
+					col.comment = row["comment"].ToString();
+
+					meta.columns.Add(col);
+				}
+				return meta;
 			}
 		}
 
