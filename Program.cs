@@ -38,7 +38,7 @@ namespace DapperHelper
 					Console.WriteLine(info);
 					Console.Write("说明：table_list是逗号分隔的多个表名称。如果为空则处理数据库的所有表 \r\n");
 					Console.Write("说明：sqlType必须是sqlserver或者mysql \r\n");
-					Console.WriteLine("");
+					Console.WriteLine("参数数量错误，当前数量：" + args.Length);
 
 					return;
 				}
@@ -47,7 +47,10 @@ namespace DapperHelper
 				string destPath = args[1];
 				string namespace_ = args[2];
 				List<string> tables = args[3].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-				tables.ForEach(s => { s = s.ToLower(); });
+				for (int i = 0; i < tables.Count; i++)
+				{
+					tables[i] = tables[i].ToLower();
+				}
 				string sqlType = args[4].ToLower();
 
 				if (sqlType == "sqlserver")
