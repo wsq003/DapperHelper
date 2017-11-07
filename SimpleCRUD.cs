@@ -61,7 +61,7 @@ namespace DapperHelper
 
 		static List<string> GetTables(string connStr)
 		{
-			string sql = "select name from sys.tables ORDER BY NAME";
+			string sql = "select name from sys.tables where is_ms_shipped=0 ORDER BY NAME";
 			if (sqlType == SqlType.MySQL)
 			{
 				sql = "SHOW TABLES";
@@ -108,6 +108,36 @@ namespace DapperHelper
 					continue;
 				}
 				var meta = CreateHelper.GetMetaInfo(connectionString, tableName);
+
+				var dal = new DALHelper(connectionString, meta, codeNamespace);
+				var s1 = dal.CreateDAL();
+
+				var ent = new EntityHelper(connectionString, meta, codeNamespace);
+				var s2 = ent.CreatePropertyEntity();
+
+				if (!Directory.Exists(destPath))
+				{
+					Directory.CreateDirectory(destPath);
+				}
+				File.WriteAllText(string.Format("{0}/{1}Sql.cs", destPath, tableName), s1);
+				File.WriteAllText(string.Format("{0}/{1}Entity.cs", destPath, tableName), s2);
+			}
+
+		}
+
+		public static void Generate2(string connectionString, string destPath = "d:\\code", string codeNamespace = "SimpleCRUD", List<string> tables = null)
+		{
+			var tbls = GetTables(connectionString);
+			var metas = CreateHelper.GetMetaInfo2(connectionString);
+
+			foreach (string tableName in tbls)
+			{
+				if (tables != null && tables.Count > 0 && !tables.Contains(tableName.ToLower()))
+				{
+					continue;
+				}
+
+				var meta = metas[tableName];
 
 				var dal = new DALHelper(connectionString, meta, codeNamespace);
 				var s1 = dal.CreateDAL();

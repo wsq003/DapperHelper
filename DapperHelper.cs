@@ -26,7 +26,7 @@ namespace DapperHelper
 			try
 			{
 				string connStr = txtConnStr.Text;
-				SimpleCRUD.Generate(connStr);
+				SimpleCRUD.Generate2(connStr);
 
 				MessageBox.Show("finished");
 			}

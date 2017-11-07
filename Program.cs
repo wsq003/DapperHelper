@@ -72,7 +72,8 @@ namespace DapperHelper
 
 				try
 				{
-					SimpleCRUD.Generate(connStr, destPath, namespace_, tables);
+					//SimpleCRUD.Generate(connStr, destPath, namespace_, tables);
+					SimpleCRUD.Generate2(connStr, destPath, namespace_, tables);
 
 					Console.Write("finished");
 				}
