@@ -152,7 +152,7 @@ namespace DapperHelper
 			}
 			else if (SimpleCRUD.sqlType == SqlType.MySQL)
 			{
-				sql = "select *, COLUMN_NAME as name, data_type as type, COLUMN_COMMENT as comment, extra='auto_increment' as is_identity, column_key='pri' as primeKey"
+				sql = "select *, COLUMN_NAME as name, data_type as type, COLUMN_COMMENT as comment, extra='auto_increment' as is_identity, lower(column_key)='pri' as primeKey"
 					+ " from information_schema.COLUMNS where TABLE_SCHEMA=database(); ";
 			}
 			else
