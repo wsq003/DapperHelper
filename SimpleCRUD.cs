@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using MySql.Data.MySqlClient;
+using System.Configuration;
 
 namespace DapperHelper
 {
@@ -98,33 +99,6 @@ namespace DapperHelper
 		/// <param name="destPath">生成的C#代码文件放到哪个目录去</param>
 		/// <param name="codeNamespace">代码放到哪个命名空间去</param>
 		/// <param name="tables">为空或者为null则生成数据库所有表的代码。都要小写</param>
-		public static void Generate(string connectionString, string destPath = "d:\\code", string codeNamespace = "SimpleCRUD", List<string> tables = null)
-		{
-			var tbls = GetTables(connectionString);
-			foreach (string tableName in tbls)
-			{
-				if (tables != null && tables.Count > 0 && !tables.Contains(tableName.ToLower()))
-				{
-					continue;
-				}
-				var meta = CreateHelper.GetMetaInfo(connectionString, tableName);
-
-				var dal = new DALHelper(connectionString, meta, codeNamespace);
-				var s1 = dal.CreateDAL();
-
-				var ent = new EntityHelper(connectionString, meta, codeNamespace);
-				var s2 = ent.CreatePropertyEntity();
-
-				if (!Directory.Exists(destPath))
-				{
-					Directory.CreateDirectory(destPath);
-				}
-				File.WriteAllText(string.Format("{0}/{1}Sql.cs", destPath, tableName), s1);
-				File.WriteAllText(string.Format("{0}/{1}Entity.cs", destPath, tableName), s2);
-			}
-
-		}
-
 		public static void Generate2(string connectionString, string destPath = "d:\\code", string codeNamespace = "SimpleCRUD", List<string> tables = null)
 		{
 			var tbls = GetTables(connectionString);
@@ -145,12 +119,20 @@ namespace DapperHelper
 				var ent = new EntityHelper(connectionString, meta, codeNamespace);
 				var s2 = ent.CreatePropertyEntity();
 
+				var fac = new FacadeHelper(connectionString, meta, codeNamespace);
+				var s3 = fac.CreateFacade();
+
 				if (!Directory.Exists(destPath))
 				{
 					Directory.CreateDirectory(destPath);
 				}
 				File.WriteAllText(string.Format("{0}/{1}Sql.cs", destPath, tableName), s1);
 				File.WriteAllText(string.Format("{0}/{1}Entity.cs", destPath, tableName), s2);
+
+				if (ConfigurationManager.AppSettings["genFacade"] == "1")
+				{
+					File.WriteAllText(string.Format("{0}/{1}Facade.cs", destPath, tableName), s3);
+				}
 			}
 
 		}

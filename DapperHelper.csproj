@@ -36,6 +36,7 @@
       <HintPath>lib\MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -56,6 +57,7 @@
     <Compile Include="Helpers\CreateHelper.cs" />
     <Compile Include="Helpers\DALHelper.cs" />
     <Compile Include="Helpers\EntityHelper.cs" />
+    <Compile Include="Helpers\FacadeHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleCRUD.cs" />
