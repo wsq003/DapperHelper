@@ -118,6 +118,9 @@ namespace DapperHelper
 				case "bit":
 					destType = "bool";
 					break;
+				case "varbinary":
+					destType = "byte[]";
+					break;
 				default:
 					destType =
 						sourceType;
