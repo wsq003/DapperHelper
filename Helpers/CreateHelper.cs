@@ -191,58 +191,5 @@ namespace DapperHelper
 			return ret;
 		}
 
-		/// <summary>
-		/// 获取数据库表的meta信息，放入dtMetaInfo
-		/// </summary>
-		/// <returns></returns>
-		public static MetaInfo GetMetaInfo(string connStr, string tableName)
-		{
-			string sql = "";
-
-			if (SimpleCRUD.sqlType == SqlType.SqlServer)
-			{
-				sql = "select T.*, charindex(d.COLUMN_NAME, T.name) as primeKey from "
-					 + " (select T.*, C.value as comment from "
-					 + " ( SELECT A.*, B.Name as type FROM SYS.COLUMNS A, SYS.TYPES B "
-					 + "  WHERE A.SYSTEM_TYPE_ID = B.SYSTEM_TYPE_ID and B.NAME != 'SYSNAME' "
-					 + "  AND A.OBJECT_ID = (SELECT OBJECT_ID FROM SYS.TABLES WHERE NAME = 'openaccount')  ) T "
-					 + "  left join (select * from sys.extended_properties where name='MS_Description' ) C on T.object_id = c.major_id AND T.column_id=c.minor_id "
-					 + "  ) T left join INFORMATION_SCHEMA.KEY_COLUMN_USAGE d on d.table_name='openaccount' and d.column_name=T.name  order by column_id ";
-				sql = sql.Replace("openaccount", tableName);
-			}
-			else if (SimpleCRUD.sqlType == SqlType.MySQL)
-			{
-				sql = "select *, COLUMN_NAME as name, data_type as type, COLUMN_COMMENT as comment, extra='auto_increment' as is_identity, column_key='pri' as primeKey"
-					+ " from information_schema.COLUMNS where table_name = 'openaccount' and TABLE_SCHEMA=database(); ";
-				sql = sql.Replace("openaccount", tableName);
-			}
-			else
-			{
-				throw new Exception("尚未支持的sqlType");
-			}
-
-			DataSet ds = SimpleCRUD.ExecSql(connStr, sql);
-
-			DataTable dtMetaInfo = ds.Tables[0];
-				
-			dtMetaInfo.TableName = tableName;
-
-			MetaInfo meta = new MetaInfo();
-			meta.TableName = tableName;
-			foreach (DataRow row in dtMetaInfo.Rows)
-			{
-				ColumnInfo col = new ColumnInfo();
-				col.name = row["name"].ToString();
-				col.csType = ConvertType(row["type"].ToString());
-				col.is_identity = IsTrue(row["is_identity"]);
-				col.is_nullable = IsTrue(row["is_nullable"]);
-				col.is_primeKey = IsTrue(row["primeKey"]);
-				col.comment = row["comment"].ToString();
-
-				meta.columns.Add(col);
-			}
-			return meta;
-		}
-
 	}
 }
