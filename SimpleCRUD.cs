@@ -19,7 +19,7 @@ namespace DapperHelper
 	}
 
 	/// <summary>
-	/// 为数据库生成实体类和CRUD语句。目前仅支持sql server
+	/// 为数据库生成实体类和CRUD语句。目前仅支持sql server和mysql
 	/// </summary>
 	public class SimpleCRUD
 	{

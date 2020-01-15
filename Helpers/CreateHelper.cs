@@ -143,12 +143,12 @@ namespace DapperHelper
 			if (SimpleCRUD.sqlType == SqlType.SqlServer)
 			{
 				sql = "select T.*, charindex(d.COLUMN_NAME, T.name) as primeKey from "
-	+ " (select T.*, C.value as comment from "
-	+ " ( SELECT X.name as table_name, A.*, B.Name as type FROM SYS.COLUMNS A, SYS.TYPES B, sys.tables X "
-	+ "  WHERE A.SYSTEM_TYPE_ID = B.SYSTEM_TYPE_ID and B.NAME != 'SYSNAME' "
-	+ "  AND A.OBJECT_ID = X.object_id  ) T "
-	+ "  left join (select * from sys.extended_properties where name='MS_Description' ) C on T.object_id = c.major_id AND T.column_id=c.minor_id "
-	+ "  ) T left join INFORMATION_SCHEMA.KEY_COLUMN_USAGE d on d.table_name=T.table_name and d.column_name=T.name  order by table_name, column_id ";
+					+ " (select T.*, C.value as comment from "
+					+ " ( SELECT X.name as table_name, A.*, B.Name as type FROM SYS.COLUMNS A, SYS.TYPES B, sys.tables X "
+					+ "  WHERE A.SYSTEM_TYPE_ID = B.SYSTEM_TYPE_ID and B.NAME != 'SYSNAME' "
+					+ "  AND A.OBJECT_ID = X.object_id  ) T "
+					+ "  left join (select * from sys.extended_properties where name='MS_Description' ) C on T.object_id = c.major_id AND T.column_id=c.minor_id "
+					+ "  ) T left join INFORMATION_SCHEMA.KEY_COLUMN_USAGE d on d.table_name=T.table_name and d.column_name=T.name  order by table_name, column_id ";
 			}
 			else if (SimpleCRUD.sqlType == SqlType.MySQL)
 			{
