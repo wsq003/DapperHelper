@@ -56,19 +56,7 @@ namespace DapperHelper
 	class CreateHelper
 	{
 		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="dr">metaInfo table中的一行</param>
-		/// <returns></returns>
-		public static string ConvertType(DataRow dr)
-		{
-			return ConvertType(dr["type"].ToString());
-		}
-
-		static List<string> nullables = new List<string> { "int", "long", "double", "DateTime" };
-
-		/// <summary>
-		/// 把sql server数据库类型转换为C#类型
+		/// 把数据库类型转换为C#类型
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
