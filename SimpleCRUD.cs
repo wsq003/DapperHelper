@@ -99,18 +99,13 @@ namespace DapperHelper
 		/// <param name="destPath">生成的C#代码文件放到哪个目录去</param>
 		/// <param name="codeNamespace">代码放到哪个命名空间去</param>
 		/// <param name="tables">为空或者为null则生成数据库所有表的代码。都要小写</param>
-		public static void Generate2(string connectionString, string destPath = "d:\\code", string codeNamespace = "SimpleCRUD", List<string> tables = null)
+		public static void Generate2(string connectionString, string destPath = "d:\\code", string codeNamespace = "SimpleCRUD")
 		{
 			var tbls = GetTables(connectionString);
 			var metas = CreateHelper.GetMetaInfo2(connectionString);
 
 			foreach (string tableName in tbls)
 			{
-				if (tables != null && tables.Count > 0 && !tables.Contains(tableName.ToLower()))
-				{
-					continue;
-				}
-
 				var meta = metas[tableName];
 
 				var dal = new DALHelper(connectionString, meta, codeNamespace);

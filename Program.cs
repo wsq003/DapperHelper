@@ -32,11 +32,10 @@ namespace DapperHelper
 				AttachConsole(ATTACH_PARENT_PROCESS);
 
 
-				if (args.Length != 5)
+				if (args.Length != 4)
 				{
-					string info = "\r\nUsage:\r\n\tDapperHelper db_connection_string dest_folder_path code_namespace table_list sqlType\r\n";
+					string info = "\r\nUsage:\r\n\tDapperHelper db_connection_string dest_folder_path code_namespace sqlType\r\n";
 					Console.WriteLine(info);
-					Console.Write("说明：table_list是逗号分隔的多个表名称。如果为空则处理数据库的所有表 \r\n");
 					Console.Write("说明：sqlType必须是sqlserver或者mysql \r\n");
 					Console.WriteLine("参数数量错误，当前数量：" + args.Length);
 
@@ -46,12 +45,7 @@ namespace DapperHelper
 				string connStr = args[0];
 				string destPath = args[1];
 				string namespace_ = args[2];
-				List<string> tables = args[3].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-				for (int i = 0; i < tables.Count; i++)
-				{
-					tables[i] = tables[i].ToLower();
-				}
-				string sqlType = args[4].ToLower();
+				string sqlType = args[3].ToLower();
 
 				if (sqlType == "sqlserver")
 				{
@@ -72,8 +66,7 @@ namespace DapperHelper
 
 				try
 				{
-					//SimpleCRUD.Generate(connStr, destPath, namespace_, tables);
-					SimpleCRUD.Generate2(connStr, destPath, namespace_, tables);
+					SimpleCRUD.Generate2(connStr, destPath, namespace_);
 
 					Console.Write("finished");
 				}
