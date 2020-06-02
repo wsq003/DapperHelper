@@ -8,14 +8,12 @@ namespace DapperHelper
 {
 	class FacadeHelper
 	{
-		private string _connectionString;
 		private MetaInfo meta;
 		private string _namespace;
 		public string _tableName;
 
-		public FacadeHelper(string connectionString, MetaInfo meta, string codeNamespace)
+		public FacadeHelper(MetaInfo meta, string codeNamespace)
 		{
-			this._connectionString = connectionString;
 			this.meta = meta;
 			this._namespace = codeNamespace;
 			_tableName = meta.TableName;
@@ -55,14 +53,14 @@ namespace DapperHelper
 			{
 				connClass = "MySqlConnection";
 			}
-			sb.Append($"\t\tprivate static string connStr = ConfigurationManager.ConnectionStrings[\"{_namespace}\"].ConnectionString;\r\n");
-			sb.Append($"\t\tpublic static void insert({_tableName} unit)\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) {{ SqlMapper.Execute(conn, {_namespace}.SQL.{_tableName}.insert, unit); }}\r\n\t\t}} \r\n");
-			sb.Append($"\t\tpublic static void update({_tableName} unit)\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) {{ SqlMapper.Execute(conn, {_namespace}.SQL.{_tableName}.update, unit); }}\r\n\t\t}} \r\n");
-			sb.Append($"\t\tpublic static List<{_namespace}.{_tableName}> select()\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) {{ return SqlMapper.Query<{_namespace}.{_tableName}>(conn, {_namespace}.SQL.{_tableName}.select).AsList(); }}\r\n\t\t}}\r\n");
-			sb.Append($"\t\tpublic static int count()\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) {{ return SqlMapper.ExecuteScalar<int>(conn, {_namespace}.SQL.{_tableName}.count); }}\r\n\t\t}}\r\n");
-			sb.Append($"\t\tpublic static void delete({GetParamStr()})\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) {{ SqlMapper.Execute(conn, {_namespace}.SQL.{_tableName}.delete, {GetParamModel()} ); }}\r\n\t\t}} \r\n");
-			sb.Append($"\t\tpublic static {_namespace}.{_tableName} getModel({GetParamStr()})\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) {{ return SqlMapper.QueryFirst<{_namespace}.{_tableName}>(conn, {_namespace}.SQL.{_tableName}.getModel, {GetParamModel()}); }}\r\n\t\t}} \r\n");
-			sb.Append($"\t\tpublic static void insertOrUpdate({_tableName} unit)\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) {{ SqlMapper.Execute(conn, {_namespace}.SQL.{_tableName}.insertOrUpdate, unit); }}\r\n\t\t}} \r\n");
+			sb.Append($"\t\tprivate static string connStr = ConfigurationManager.ConnectionStrings[\"{_namespace}\"].ConnectionString;\r\n\r\n");
+			sb.Append($"\t\tpublic static void insert({_tableName} unit)\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) \r\n\t\t\t{{ \r\n\t\t\t\tSqlMapper.Execute(conn, {_namespace}.SQL.{_tableName}.insert, unit); \r\n\t\t\t}}\r\n\t\t}} \r\n\r\n");
+			sb.Append($"\t\tpublic static void update({_tableName} unit)\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) \r\n\t\t\t{{ \r\n\t\t\t\tSqlMapper.Execute(conn, {_namespace}.SQL.{_tableName}.update, unit); \r\n\t\t\t}}\r\n\t\t}} \r\n\r\n");
+			sb.Append($"\t\tpublic static List<{_namespace}.{_tableName}> select()\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) \r\n\t\t\t{{ \r\n\t\t\t\treturn SqlMapper.Query<{_namespace}.{_tableName}>(conn, {_namespace}.SQL.{_tableName}.select).AsList(); \r\n\t\t\t}}\r\n\t\t}}\r\n\r\n");
+			sb.Append($"\t\tpublic static int count()\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) \r\n\t\t\t{{ \r\n\t\t\t\treturn SqlMapper.ExecuteScalar<int>(conn, {_namespace}.SQL.{_tableName}.count); \r\n\t\t\t}}\r\n\t\t}} \r\n\r\n");
+			sb.Append($"\t\tpublic static void delete({GetParamStr()})\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) \r\n\t\t\t{{ \r\n\t\t\t\tSqlMapper.Execute(conn, {_namespace}.SQL.{_tableName}.delete, {GetParamModel()} ); \r\n\t\t\t}}\r\n\t\t}} \r\n\r\n");
+			sb.Append($"\t\tpublic static {_namespace}.{_tableName} getModel({GetParamStr()})\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) \r\n\t\t\t{{ \r\n\t\t\t\treturn SqlMapper.QueryFirst<{_namespace}.{_tableName}>(conn, {_namespace}.SQL.{_tableName}.getModel, {GetParamModel()}); }}\r\n\t\t}} \r\n\r\n");
+			sb.Append($"\t\tpublic static void insertOrUpdate({_tableName} unit)\r\n\t\t{{ \r\n\t\t\tusing ({connClass} conn = new {connClass}(connStr)) \r\n\t\t\t{{ \r\n\t\t\t\tSqlMapper.Execute(conn, {_namespace}.SQL.{_tableName}.insertOrUpdate, unit); \r\n\t\t\t}}\r\n\t\t}} \r\n\r\n");
 
 			//tail
 			sb.Append("\t} //end of class\r\n");

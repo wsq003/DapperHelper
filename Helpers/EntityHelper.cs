@@ -9,7 +9,6 @@ namespace DapperHelper
 {
 	class EntityHelper
 	{
-		public string ConnectionString = "";
 		/// <summary>
 		/// 表的meta信息
 		/// </summary>
@@ -23,9 +22,8 @@ namespace DapperHelper
 		/// </summary>
 		public string _tableName;
 
-		public EntityHelper(string connStr, MetaInfo dt, string namespace_)
+		public EntityHelper(MetaInfo dt, string namespace_)
         {
-			ConnectionString = connStr;
 			_dtMetaInfo = dt;
 
 			_namespace = namespace_;

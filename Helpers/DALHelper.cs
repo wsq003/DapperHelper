@@ -10,7 +10,6 @@ namespace DapperHelper
 {
 	class DALHelper
 	{
-		public string ConnectionString = "";
 		/// <summary>
 		/// 表的meta信息
 		/// </summary>
@@ -24,9 +23,8 @@ namespace DapperHelper
 		/// </summary>
 		public string _tableName;
 
-		public DALHelper(string connStr, MetaInfo dt, string namespace_)
+		public DALHelper(MetaInfo dt, string namespace_)
 		{
-			ConnectionString = connStr;
 			_dtMetaInfo = dt;
 
 			_namespace = namespace_;
