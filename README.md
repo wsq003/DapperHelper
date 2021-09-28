@@ -1,5 +1,7 @@
 # DapperHelper
-create entity and sql for dapper
+create entity and sql for dapper.
+
+should be better than EF `Scaffold-DbContext`
 
 it's better to use this tool in command line
 

@@ -11,6 +11,9 @@ using System.Configuration;
 
 namespace DapperHelper
 {
+	/// <summary>
+	/// 数据库类型
+	/// </summary>
 	public enum SqlType
 	{
 		SqlServer,
@@ -19,13 +22,58 @@ namespace DapperHelper
 	}
 
 	/// <summary>
-	/// 为数据库生成实体类和CRUD语句。目前仅支持sql server
+	/// 某个字段的信息
+	/// </summary>
+	public class ColumnInfo
+	{
+		/// <summary>
+		/// 字段名称
+		/// </summary>
+		public string name;
+
+		/// <summary>
+		/// C#里面的字段类型
+		/// </summary>
+		public string csType;
+
+		/// <summary>
+		/// 是否自增长
+		/// </summary>
+		public bool is_identity;
+
+		/// <summary>
+		/// 是否可为NULL
+		/// </summary>
+		public bool is_nullable;
+
+		/// <summary>
+		/// 是否主键字段之一
+		/// </summary>
+		public bool is_primeKey;
+
+		/// <summary>
+		/// 字段注释
+		/// </summary>
+		public string comment;
+	}
+
+	/// <summary>
+	/// 数据库表的meta信息
+	/// </summary>
+	public class MetaInfo
+	{
+		public string TableName;
+		public List<ColumnInfo> columns = new List<ColumnInfo>();
+	}
+
+	/// <summary>
+	/// 为数据库生成实体类和CRUD语句。目前支持sqlserver和mysql
 	/// </summary>
 	public class SimpleCRUD
 	{
-		public static SqlType sqlType = SqlType.SqlServer;
+		public static SqlType sqlType { get; set; }
 
-		public static DataSet ExecSql(string connStr, string sql)
+		private static DataSet ExecSql(string connStr, string sql)
 		{
 			DataSet ds = new DataSet();
 			if (sqlType == SqlType.SqlServer)
@@ -60,7 +108,7 @@ namespace DapperHelper
 			}
 		}
 
-		static List<string> GetTables(string connStr)
+		private static List<string> GetTables(string connStr)
 		{
 			string sql = "select name from sys.tables where is_ms_shipped=0 ORDER BY NAME";
 			if (sqlType == SqlType.MySQL)
@@ -99,10 +147,10 @@ namespace DapperHelper
 		/// <param name="destPath">生成的C#代码文件放到哪个目录去</param>
 		/// <param name="codeNamespace">代码放到哪个命名空间去</param>
 		/// <param name="tables">为空或者为null则生成数据库所有表的代码。都要小写</param>
-		public static void Generate2(string connectionString, string destPath = "d:\\code", string codeNamespace = "SimpleCRUD", List<string> tables = null)
+		public static void Generate(string connectionString, string destPath = "d:\\code", string codeNamespace = "SimpleCRUD", List<string> tables = null)
 		{
 			var tbls = GetTables(connectionString);
-			var metas = CreateHelper.GetMetaInfo2(connectionString);
+			var metas = GetMetaInfo(connectionString);
 
 			foreach (string tableName in tbls)
 			{
@@ -113,13 +161,13 @@ namespace DapperHelper
 
 				var meta = metas[tableName];
 
-				var dal = new DALHelper(connectionString, meta, codeNamespace);
+				var dal = new DALHelper(meta, codeNamespace);
 				var s1 = dal.CreateDAL();
 
-				var ent = new EntityHelper(connectionString, meta, codeNamespace);
+				var ent = new EntityHelper(meta, codeNamespace);
 				var s2 = ent.CreatePropertyEntity();
 
-				var fac = new FacadeHelper(connectionString, meta, codeNamespace);
+				var fac = new FacadeHelper(meta, codeNamespace);
 				var s3 = fac.CreateFacade();
 
 				if (!Directory.Exists(destPath))
@@ -135,6 +183,135 @@ namespace DapperHelper
 				}
 			}
 
+		}
+
+		/// <summary>
+		/// 把sql server数据库类型转换为C#类型
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <returns></returns>
+		private static string ConvertType(string sourceType)
+		{
+			string destType = "";
+			switch (sourceType.ToLower())
+			{
+				case "tinyint":
+				case "smallint":
+				case "int":
+					destType = "int";
+					break;
+				case "bigint":
+					destType = "long";
+					break;
+				case "float":
+					destType = "float";
+					break;
+				case "numeric":
+					destType = "double";
+					break;
+				case "char":
+				case "text":
+				case "ntext":
+				case "nchar":
+				case "nvarchar":
+				case "varchar":
+				case "sysname":
+					destType = "string";
+					break;
+				case "time":
+					destType = "string";
+					break;
+				case "datetime":
+				case "datetime2":
+				case "date":
+				case "smalldatetime":
+					destType = "DateTime";
+					break;
+				case "decimal":
+					destType = "decimal";
+					break;
+				case "money":
+					destType = "double";
+					break;
+				case "bit":
+					destType = "bool";
+					break;
+				case "varbinary":
+					destType = "byte[]";
+					break;
+				default:
+					destType =
+						sourceType;
+					break;
+			}
+
+			return destType;
+		}
+
+		private static bool IsTrue(object o)
+		{
+			var ss = o.ToString();
+			return (ss == "True" || ss == "1");
+		}
+
+		/// <summary>
+		/// 获取所有table的meta信息
+		/// </summary>
+		/// <param name="connStr"></param>
+		/// <returns></returns>
+		private static Dictionary<string, MetaInfo> GetMetaInfo(string connStr)
+		{
+			string sql = "";
+
+			if (SimpleCRUD.sqlType == SqlType.SqlServer)
+			{
+				sql = "select T.*, charindex(d.COLUMN_NAME, T.name) as primeKey from "
+						+ " (select T.*, C.value as comment from "
+						+ " ( SELECT X.name as table_name, A.*, B.Name as type FROM SYS.COLUMNS A, SYS.TYPES B, sys.tables X "
+						+ "  WHERE A.SYSTEM_TYPE_ID = B.SYSTEM_TYPE_ID and B.NAME != 'SYSNAME' "
+						+ "  AND A.OBJECT_ID = X.object_id  ) T "
+						+ "  left join (select * from sys.extended_properties where name='MS_Description' ) C on T.object_id = c.major_id AND T.column_id=c.minor_id "
+						+ "  ) T left join INFORMATION_SCHEMA.KEY_COLUMN_USAGE d on d.table_name=T.table_name and d.column_name=T.name  order by table_name, column_id ";
+			}
+			else if (SimpleCRUD.sqlType == SqlType.MySQL)
+			{
+				sql = "select *, COLUMN_NAME as name, data_type as type, COLUMN_COMMENT as comment, extra='auto_increment' as is_identity, lower(column_key)='pri' as primeKey"
+						+ " from information_schema.COLUMNS where TABLE_SCHEMA=database(); ";
+			}
+			else
+			{
+				throw new Exception("尚未支持的sqlType");
+			}
+
+			DataSet ds = SimpleCRUD.ExecSql(connStr, sql);
+
+			DataTable dtMetaInfo = ds.Tables[0];
+
+			Dictionary<string, MetaInfo> ret = new Dictionary<string, MetaInfo>();
+
+			foreach (DataRow row in dtMetaInfo.Rows)
+			{
+				string tableName = row["table_name"].ToString();
+				if (!ret.ContainsKey(tableName))
+				{
+					MetaInfo temp = new MetaInfo();
+					temp.TableName = tableName;
+					ret.Add(tableName, temp);
+				}
+				MetaInfo meta = ret[tableName];
+
+				ColumnInfo col = new ColumnInfo();
+				col.name = row["name"].ToString();
+				col.csType = ConvertType(row["type"].ToString());
+				col.is_identity = IsTrue(row["is_identity"]);
+				col.is_nullable = IsTrue(row["is_nullable"]);
+				col.is_primeKey = IsTrue(row["primeKey"]);
+				col.comment = row["comment"].ToString();
+
+				meta.columns.Add(col);
+			}
+
+			return ret;
 		}
 	}
 }
